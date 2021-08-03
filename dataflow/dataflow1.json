@@ -3,10 +3,26 @@
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [],
-			"sinks": [],
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "InvoiceData",
+						"type": "DatasetReference"
+					},
+					"name": "ReadInvoiceData"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "InvoicesTable",
+						"type": "DatasetReference"
+					},
+					"name": "ImportInvoiceData"
+				}
+			],
 			"transformations": [],
-			"script": ""
+			"script": "source(output(\n\t\tInvoiceID as integer,\n\t\tVendorID as integer,\n\t\tInvoiceNumber as string,\n\t\tInvoiceDate as date 'MM/dd/yyyy',\n\t\tInvoiceTotal as float,\n\t\tPaymentTotal as float,\n\t\tCreditTotal as float,\n\t\tTermsID as string,\n\t\tInvoiceDueDate as date 'MM/dd/yyyy',\n\t\tPaymentDate as date 'MM/dd/yyyy'\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> ReadInvoiceData\nReadInvoiceData sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> ImportInvoiceData"
 		}
 	}
 }
