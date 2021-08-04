@@ -1,0 +1,27 @@
+{
+	"name": "JoinInvoiceVendorsLineItems",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "InvoicesTable",
+						"type": "DatasetReference"
+					},
+					"name": "ReadInvoicesTable"
+				},
+				{
+					"dataset": {
+						"referenceName": "VendorsTable",
+						"type": "DatasetReference"
+					},
+					"name": "ReadVendorsTable"
+				}
+			],
+			"sinks": [],
+			"transformations": [],
+			"script": "source(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> ReadInvoicesTable\nsource(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> ReadVendorsTable"
+		}
+	}
+}
