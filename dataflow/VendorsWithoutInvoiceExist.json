@@ -1,0 +1,31 @@
+{
+	"name": "VendorsWithoutInvoiceExist",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "VendorsTable",
+						"type": "DatasetReference"
+					},
+					"name": "ReadVendors"
+				},
+				{
+					"dataset": {
+						"referenceName": "InvoicesTable",
+						"type": "DatasetReference"
+					},
+					"name": "ReadInvoices"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "VendorsWithoutInvoices"
+				}
+			],
+			"script": "source(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> ReadVendors\nsource(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> ReadInvoices\nReadVendors, ReadInvoices exists(ERROR_FUNCTION('') == ERROR_FUNCTION(''),\n\tnegate:true,\n\tbroadcast: 'auto')~> VendorsWithoutInvoices"
+		}
+	}
+}
