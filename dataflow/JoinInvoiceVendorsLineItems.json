@@ -26,7 +26,15 @@
 					"name": "ReadInvoiceLineItemsTable"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "InvoicesVendorsLineItems",
+						"type": "DatasetReference"
+					},
+					"name": "WriteJoinResults"
+				}
+			],
 			"transformations": [
 				{
 					"name": "JoinInvoicesVendors"
@@ -35,7 +43,7 @@
 					"name": "JoinInvoiceLineItems"
 				}
 			],
-			"script": "source(output(\n\t\tInvoiceID as integer,\n\t\tVendorID as integer,\n\t\tInvoiceNumber as string,\n\t\tInvoiceDate as date,\n\t\tInvoiceTotal as float,\n\t\tPaymentTotal as float,\n\t\tCreditTotal as float,\n\t\tTermsID as string,\n\t\tInvoiceDueDate as date,\n\t\tPaymentDate as date\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> ReadInvoicesTable\nsource(output(\n\t\tVendorID as integer,\n\t\tVendorName as string,\n\t\tVendorAddress1 as string,\n\t\tVendorAddress2 as string,\n\t\tVendorCity as string,\n\t\tVendorState as string,\n\t\tVendorZipCode as string,\n\t\tVendorPhone as string,\n\t\tVendorContactLName as string,\n\t\tVendorContactFName as string,\n\t\tDefaultTermsID as integer,\n\t\tDefaultAccountNo as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> ReadVendorsTable\nsource(output(\n\t\tInvoiceID as integer,\n\t\tInvoiceSequence as integer,\n\t\tAccountNo as integer,\n\t\tInvoiceLineItemAmount as float,\n\t\tInvoiceLineItemDescription as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> ReadInvoiceLineItemsTable\nReadInvoicesTable, ReadVendorsTable join(ReadInvoicesTable@VendorID == ReadVendorsTable@VendorID,\n\tjoinType:'inner',\n\tbroadcast: 'auto')~> JoinInvoicesVendors\nJoinInvoicesVendors, ReadInvoiceLineItemsTable join(ReadInvoicesTable@InvoiceID == ReadInvoiceLineItemsTable@InvoiceID,\n\tjoinType:'inner',\n\tbroadcast: 'auto')~> JoinInvoiceLineItems"
+			"script": "source(output(\n\t\tInvoiceID as integer,\n\t\tVendorID as integer,\n\t\tInvoiceNumber as string,\n\t\tInvoiceDate as date,\n\t\tInvoiceTotal as float,\n\t\tPaymentTotal as float,\n\t\tCreditTotal as float,\n\t\tTermsID as string,\n\t\tInvoiceDueDate as date,\n\t\tPaymentDate as date\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> ReadInvoicesTable\nsource(output(\n\t\tVendorID as integer,\n\t\tVendorName as string,\n\t\tVendorAddress1 as string,\n\t\tVendorAddress2 as string,\n\t\tVendorCity as string,\n\t\tVendorState as string,\n\t\tVendorZipCode as string,\n\t\tVendorPhone as string,\n\t\tVendorContactLName as string,\n\t\tVendorContactFName as string,\n\t\tDefaultTermsID as integer,\n\t\tDefaultAccountNo as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> ReadVendorsTable\nsource(output(\n\t\tInvoiceID as integer,\n\t\tInvoiceSequence as integer,\n\t\tAccountNo as integer,\n\t\tInvoiceLineItemAmount as float,\n\t\tInvoiceLineItemDescription as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> ReadInvoiceLineItemsTable\nReadInvoicesTable, ReadVendorsTable join(ReadInvoicesTable@VendorID == ReadVendorsTable@VendorID,\n\tjoinType:'inner',\n\tbroadcast: 'auto')~> JoinInvoicesVendors\nJoinInvoicesVendors, ReadInvoiceLineItemsTable join(ReadInvoicesTable@InvoiceID == ReadInvoiceLineItemsTable@InvoiceID,\n\tjoinType:'inner',\n\tbroadcast: 'auto')~> JoinInvoiceLineItems\nJoinInvoiceLineItems sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> WriteJoinResults"
 		}
 	}
 }
