@@ -1,0 +1,72 @@
+{
+	"name": "VendorsCSV",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "InputBlob",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "Vendors.csv",
+				"container": "input"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "VendorID",
+				"type": "String"
+			},
+			{
+				"name": "VendorName",
+				"type": "String"
+			},
+			{
+				"name": "VendorAddress1",
+				"type": "String"
+			},
+			{
+				"name": "VendorAddress2",
+				"type": "String"
+			},
+			{
+				"name": "VendorCity",
+				"type": "String"
+			},
+			{
+				"name": "VendorState",
+				"type": "String"
+			},
+			{
+				"name": "VendorZipCode",
+				"type": "String"
+			},
+			{
+				"name": "VendorPhone",
+				"type": "String"
+			},
+			{
+				"name": "VendorContactLName",
+				"type": "String"
+			},
+			{
+				"name": "VendorContactFName",
+				"type": "String"
+			},
+			{
+				"name": "DefaultTermsID",
+				"type": "String"
+			},
+			{
+				"name": "DefaultAccountNo",
+				"type": "String"
+			}
+		]
+	}
+}

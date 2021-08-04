@@ -1,0 +1,44 @@
+{
+	"name": "InvoiceLineItemsCSV",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "InputBlob",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "InvoiceLineItems.csv",
+				"container": "input"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "InvoiceID",
+				"type": "String"
+			},
+			{
+				"name": "InvoiceSequence",
+				"type": "String"
+			},
+			{
+				"name": "AccountNo",
+				"type": "String"
+			},
+			{
+				"name": "InvoiceLineItemAmount",
+				"type": "String"
+			},
+			{
+				"name": "InvoiceLineItemDescription",
+				"type": "String"
+			}
+		]
+	}
+}

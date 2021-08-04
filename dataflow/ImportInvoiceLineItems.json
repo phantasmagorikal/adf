@@ -1,0 +1,28 @@
+{
+	"name": "ImportInvoiceLineItems",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "InvoiceLineItemsCSV",
+						"type": "DatasetReference"
+					},
+					"name": "ReadInvoiceLineItems"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "InvoiceLineItemsTable",
+						"type": "DatasetReference"
+					},
+					"name": "WriteInvoiceLineItems"
+				}
+			],
+			"transformations": [],
+			"script": "source(output(\n\t\tInvoiceID as integer,\n\t\tInvoiceSequence as integer,\n\t\tAccountNo as integer,\n\t\tInvoiceLineItemAmount as float,\n\t\tInvoiceLineItemDescription as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> ReadInvoiceLineItems\nReadInvoiceLineItems sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> WriteInvoiceLineItems"
+		}
+	}
+}

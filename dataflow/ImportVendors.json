@@ -1,0 +1,28 @@
+{
+	"name": "ImportVendors",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "VendorsCSV",
+						"type": "DatasetReference"
+					},
+					"name": "ReadVendors"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "VendorsTable",
+						"type": "DatasetReference"
+					},
+					"name": "WriteVendors"
+				}
+			],
+			"transformations": [],
+			"script": "source(output(\n\t\tVendorID as integer,\n\t\tVendorName as string,\n\t\tVendorAddress1 as string,\n\t\tVendorAddress2 as string,\n\t\tVendorCity as string,\n\t\tVendorState as string,\n\t\tVendorZipCode as string,\n\t\tVendorPhone as string,\n\t\tVendorContactLName as string,\n\t\tVendorContactFName as string,\n\t\tDefaultTermsID as integer,\n\t\tDefaultAccountNo as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> ReadVendors\nReadVendors sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> WriteVendors"
+		}
+	}
+}
