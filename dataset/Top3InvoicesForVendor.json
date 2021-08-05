@@ -1,0 +1,16 @@
+{
+	"name": "Top3InvoicesForVendor",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "TransformationDatabase",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "Top3InvoicesForVendor"
+		}
+	}
+}

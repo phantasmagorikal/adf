@@ -19,16 +19,30 @@
 					"name": "ReadVendors"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Top3InvoicesForVendor",
+						"type": "DatasetReference"
+					},
+					"name": "WriteResults"
+				}
+			],
 			"transformations": [
 				{
 					"name": "RankInvoicesForVendors"
 				},
 				{
 					"name": "JoinInvoicesVendors"
+				},
+				{
+					"name": "FilterForTop3Invoices"
+				},
+				{
+					"name": "Select"
 				}
 			],
-			"script": "source(output(\n\t\tInvoiceID as integer,\n\t\tVendorID as integer,\n\t\tInvoiceNumber as string,\n\t\tInvoiceDate as date,\n\t\tInvoiceTotal as float,\n\t\tPaymentTotal as float,\n\t\tCreditTotal as float,\n\t\tTermsID as string,\n\t\tInvoiceDueDate as date,\n\t\tPaymentDate as date\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> ReadInvoices\nsource(output(\n\t\tVendorID as integer,\n\t\tVendorName as string,\n\t\tVendorAddress1 as string,\n\t\tVendorAddress2 as string,\n\t\tVendorCity as string,\n\t\tVendorState as string,\n\t\tVendorZipCode as string,\n\t\tVendorPhone as string,\n\t\tVendorContactLName as string,\n\t\tVendorContactFName as string,\n\t\tDefaultTermsID as integer,\n\t\tDefaultAccountNo as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> ReadVendors\nJoinInvoicesVendors window(over(VendorName),\n\tdesc(InvoiceTotal, true)) ~> RankInvoicesForVendors\nReadInvoices, ReadVendors join(ReadInvoices@VendorID == ReadVendors@VendorID,\n\tjoinType:'inner',\n\tbroadcast: 'auto')~> JoinInvoicesVendors"
+			"script": "source(output(\n\t\tInvoiceID as integer,\n\t\tVendorID as integer,\n\t\tInvoiceNumber as string,\n\t\tInvoiceDate as date,\n\t\tInvoiceTotal as float,\n\t\tPaymentTotal as float,\n\t\tCreditTotal as float,\n\t\tTermsID as string,\n\t\tInvoiceDueDate as date,\n\t\tPaymentDate as date\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> ReadInvoices\nsource(output(\n\t\tVendorID as integer,\n\t\tVendorName as string,\n\t\tVendorAddress1 as string,\n\t\tVendorAddress2 as string,\n\t\tVendorCity as string,\n\t\tVendorState as string,\n\t\tVendorZipCode as string,\n\t\tVendorPhone as string,\n\t\tVendorContactLName as string,\n\t\tVendorContactFName as string,\n\t\tDefaultTermsID as integer,\n\t\tDefaultAccountNo as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> ReadVendors\nJoinInvoicesVendors window(over(VendorName),\n\tdesc(InvoiceTotal, true),\n\tRank = rank()) ~> RankInvoicesForVendors\nReadInvoices, ReadVendors join(ReadInvoices@VendorID == ReadVendors@VendorID,\n\tjoinType:'inner',\n\tbroadcast: 'auto')~> JoinInvoicesVendors\nSelect filter(Rank<=3) ~> FilterForTop3Invoices\nRankInvoicesForVendors select(mapColumn(\n\t\tInvoiceID,\n\t\tInvoiceTotal,\n\t\tVendorName,\n\t\tRank\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Select\nFilterForTop3Invoices sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> WriteResults"
 		}
 	}
 }
