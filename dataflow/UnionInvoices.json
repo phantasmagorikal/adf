@@ -1,0 +1,30 @@
+{
+	"name": "UnionInvoices",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "InvoicesTable",
+						"type": "DatasetReference"
+					},
+					"name": "ReadInvoices"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "SplitPaidUnpaid"
+				},
+				{
+					"name": "AddPaidSourceColumn"
+				},
+				{
+					"name": "AddUnpaidSourceColumn"
+				}
+			],
+			"script": "source(output(\n\t\tInvoiceID as integer,\n\t\tVendorID as integer,\n\t\tInvoiceNumber as string,\n\t\tInvoiceDate as date,\n\t\tInvoiceTotal as float,\n\t\tPaymentTotal as float,\n\t\tCreditTotal as float,\n\t\tTermsID as string,\n\t\tInvoiceDueDate as date,\n\t\tPaymentDate as date\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> ReadInvoices\nReadInvoices split(InvoiceTotal-PaymentTotal-CreditTotal==0,\n\tdisjoint: false) ~> SplitPaidUnpaid@(Paid, Unpaid)\nSplitPaidUnpaid@Paid derive(Source = 'Paid') ~> AddPaidSourceColumn\nSplitPaidUnpaid@Unpaid derive(Source = 'Unpaid') ~> AddUnpaidSourceColumn"
+		}
+	}
+}
