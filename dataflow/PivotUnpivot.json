@@ -1,0 +1,24 @@
+{
+	"name": "PivotUnpivot",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "InvoicesTable",
+						"type": "DatasetReference"
+					},
+					"name": "ReadInvoices"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "Pivot"
+				}
+			],
+			"script": "source(output(\n\t\tInvoiceID as integer,\n\t\tVendorID as integer,\n\t\tInvoiceNumber as string,\n\t\tInvoiceDate as date,\n\t\tInvoiceTotal as float,\n\t\tPaymentTotal as float,\n\t\tCreditTotal as float,\n\t\tTermsID as string,\n\t\tInvoiceDueDate as date,\n\t\tPaymentDate as date\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> ReadInvoices\nReadInvoices pivot(groupBy(VendorID),\n\tpivotBy(TermsID),\n\t{} = sum(InvoiceTotal),\n\tcolumnNaming: '$N$V',\n\tlateral: true) ~> Pivot"
+		}
+	}
+}
