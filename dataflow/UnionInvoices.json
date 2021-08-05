@@ -12,7 +12,15 @@
 					"name": "ReadInvoices"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "UnionInvoices",
+						"type": "DatasetReference"
+					},
+					"name": "WriteResults"
+				}
+			],
 			"transformations": [
 				{
 					"name": "SplitPaidUnpaid"
@@ -22,9 +30,12 @@
 				},
 				{
 					"name": "AddUnpaidSourceColumn"
+				},
+				{
+					"name": "UnionInvoices"
 				}
 			],
-			"script": "source(output(\n\t\tInvoiceID as integer,\n\t\tVendorID as integer,\n\t\tInvoiceNumber as string,\n\t\tInvoiceDate as date,\n\t\tInvoiceTotal as float,\n\t\tPaymentTotal as float,\n\t\tCreditTotal as float,\n\t\tTermsID as string,\n\t\tInvoiceDueDate as date,\n\t\tPaymentDate as date\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> ReadInvoices\nReadInvoices split(InvoiceTotal-PaymentTotal-CreditTotal==0,\n\tdisjoint: false) ~> SplitPaidUnpaid@(Paid, Unpaid)\nSplitPaidUnpaid@Paid derive(Source = 'Paid') ~> AddPaidSourceColumn\nSplitPaidUnpaid@Unpaid derive(Source = 'Unpaid') ~> AddUnpaidSourceColumn"
+			"script": "source(output(\n\t\tInvoiceID as integer,\n\t\tVendorID as integer,\n\t\tInvoiceNumber as string,\n\t\tInvoiceDate as date,\n\t\tInvoiceTotal as float,\n\t\tPaymentTotal as float,\n\t\tCreditTotal as float,\n\t\tTermsID as string,\n\t\tInvoiceDueDate as date,\n\t\tPaymentDate as date\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> ReadInvoices\nReadInvoices split(InvoiceTotal-PaymentTotal-CreditTotal==0,\n\tdisjoint: false) ~> SplitPaidUnpaid@(Paid, Unpaid)\nSplitPaidUnpaid@Paid derive(Source = 'Paid') ~> AddPaidSourceColumn\nSplitPaidUnpaid@Unpaid derive(Source = 'Unpaid') ~> AddUnpaidSourceColumn\nAddPaidSourceColumn, AddUnpaidSourceColumn union(byName: true)~> UnionInvoices\nUnionInvoices sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> WriteResults"
 		}
 	}
 }
