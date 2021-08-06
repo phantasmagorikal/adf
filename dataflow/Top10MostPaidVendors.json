@@ -19,7 +19,15 @@
 					"name": "ReadVendors"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Top10PaidVendors",
+						"type": "DatasetReference"
+					},
+					"name": "WriteResults"
+				}
+			],
 			"transformations": [
 				{
 					"name": "JoinInvoicesVendors"
@@ -32,9 +40,18 @@
 				},
 				{
 					"name": "SortByPaymentTotalDescending"
+				},
+				{
+					"name": "AddRanking"
+				},
+				{
+					"name": "GetTop10"
+				},
+				{
+					"name": "Select1"
 				}
 			],
-			"script": "source(output(\n\t\tInvoiceID as integer,\n\t\tVendorID as integer,\n\t\tInvoiceNumber as string,\n\t\tInvoiceDate as date,\n\t\tInvoiceTotal as float,\n\t\tPaymentTotal as float,\n\t\tCreditTotal as float,\n\t\tTermsID as string,\n\t\tInvoiceDueDate as date,\n\t\tPaymentDate as date\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> ReadInvoices\nsource(output(\n\t\tVendorID as integer,\n\t\tVendorName as string,\n\t\tVendorAddress1 as string,\n\t\tVendorAddress2 as string,\n\t\tVendorCity as string,\n\t\tVendorState as string,\n\t\tVendorZipCode as string,\n\t\tVendorPhone as string,\n\t\tVendorContactLName as string,\n\t\tVendorContactFName as string,\n\t\tDefaultTermsID as integer,\n\t\tDefaultAccountNo as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> ReadVendors\nReadInvoices, ReadVendors join(ReadInvoices@VendorID == ReadVendors@VendorID,\n\tjoinType:'inner',\n\tbroadcast: 'auto')~> JoinInvoicesVendors\nJoinInvoicesVendors select(mapColumn(\n\t\tInvoiceID,\n\t\tPaymentTotal,\n\t\tVendorID = ReadVendors@VendorID,\n\t\tVendorName\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Select\nSelect aggregate(groupBy(VendorID,\n\t\tVendorName),\n\tTotalPayments = round(sum(PaymentTotal), 2)) ~> GetTotalPaymentForVendors\nGetTotalPaymentForVendors sort(desc(TotalPayments, true),\n\tasc(VendorName, true),\n\tcaseInsensitive: true) ~> SortByPaymentTotalDescending"
+			"script": "source(output(\n\t\tInvoiceID as integer,\n\t\tVendorID as integer,\n\t\tInvoiceNumber as string,\n\t\tInvoiceDate as date,\n\t\tInvoiceTotal as float,\n\t\tPaymentTotal as float,\n\t\tCreditTotal as float,\n\t\tTermsID as string,\n\t\tInvoiceDueDate as date,\n\t\tPaymentDate as date\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> ReadInvoices\nsource(output(\n\t\tVendorID as integer,\n\t\tVendorName as string,\n\t\tVendorAddress1 as string,\n\t\tVendorAddress2 as string,\n\t\tVendorCity as string,\n\t\tVendorState as string,\n\t\tVendorZipCode as string,\n\t\tVendorPhone as string,\n\t\tVendorContactLName as string,\n\t\tVendorContactFName as string,\n\t\tDefaultTermsID as integer,\n\t\tDefaultAccountNo as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> ReadVendors\nReadInvoices, ReadVendors join(ReadInvoices@VendorID == ReadVendors@VendorID,\n\tjoinType:'inner',\n\tbroadcast: 'auto')~> JoinInvoicesVendors\nJoinInvoicesVendors select(mapColumn(\n\t\tInvoiceID,\n\t\tPaymentTotal,\n\t\tVendorID = ReadVendors@VendorID,\n\t\tVendorName\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Select\nSelect aggregate(groupBy(VendorID,\n\t\tVendorName),\n\tTotalPayments = round(sum(PaymentTotal), 2)) ~> GetTotalPaymentForVendors\nGetTotalPaymentForVendors sort(desc(TotalPayments, true),\n\tasc(VendorName, true),\n\tcaseInsensitive: true) ~> SortByPaymentTotalDescending\nSortByPaymentTotalDescending keyGenerate(output(Rank as long),\n\tstartAt: 1L) ~> AddRanking\nAddRanking filter(Rank<=10) ~> GetTop10\nGetTop10 select(mapColumn(\n\t\tVendorID,\n\t\tVendorName,\n\t\tTotalPayments\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Select1\nSelect1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> WriteResults"
 		}
 	}
 }
