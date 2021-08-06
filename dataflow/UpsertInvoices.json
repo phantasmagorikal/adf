@@ -1,0 +1,24 @@
+{
+	"name": "UpsertInvoices",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Invoice1CSV",
+						"type": "DatasetReference"
+					},
+					"name": "ReadInvoice1Blob"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "AddLastUpdatedDateTimeColumn"
+				}
+			],
+			"script": "source(output(\n\t\tInvoiceID as string,\n\t\tVendorID as string,\n\t\tInvoiceNumber as string,\n\t\tInvoiceDate as string,\n\t\tInvoiceTotal as string,\n\t\tPaymentTotal as string,\n\t\tCreditTotal as string,\n\t\tTermsID as string,\n\t\tInvoiceDueDate as string,\n\t\tPaymentDate as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> ReadInvoice1Blob\nReadInvoice1Blob derive(LastUpdatedDateTime = fromUTC(currentUTC(), 'America/Chicago')) ~> AddLastUpdatedDateTimeColumn"
+		}
+	}
+}

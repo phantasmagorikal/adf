@@ -1,0 +1,64 @@
+{
+	"name": "Invoice1CSV",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "InputBlob",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "Invoices1.csv",
+				"container": "input"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "InvoiceID",
+				"type": "String"
+			},
+			{
+				"name": "VendorID",
+				"type": "String"
+			},
+			{
+				"name": "InvoiceNumber",
+				"type": "String"
+			},
+			{
+				"name": "InvoiceDate",
+				"type": "String"
+			},
+			{
+				"name": "InvoiceTotal",
+				"type": "String"
+			},
+			{
+				"name": "PaymentTotal",
+				"type": "String"
+			},
+			{
+				"name": "CreditTotal",
+				"type": "String"
+			},
+			{
+				"name": "TermsID",
+				"type": "String"
+			},
+			{
+				"name": "InvoiceDueDate",
+				"type": "String"
+			},
+			{
+				"name": "PaymentDate",
+				"type": "String"
+			}
+		]
+	}
+}
