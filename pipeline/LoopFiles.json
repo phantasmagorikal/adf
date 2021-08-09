@@ -110,7 +110,13 @@
 							"outputs": [
 								{
 									"referenceName": "ArchiveInvoiceFile",
-									"type": "DatasetReference"
+									"type": "DatasetReference",
+									"parameters": {
+										"FileName": {
+											"value": "@item().name",
+											"type": "Expression"
+										}
+									}
 								}
 							]
 						}
