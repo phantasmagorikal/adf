@@ -79,7 +79,13 @@
 							"inputs": [
 								{
 									"referenceName": "SourceInvoiceFile",
-									"type": "DatasetReference"
+									"type": "DatasetReference",
+									"parameters": {
+										"FileName": {
+											"value": "@item().FileName",
+											"type": "Expression"
+										}
+									}
 								}
 							]
 						}
