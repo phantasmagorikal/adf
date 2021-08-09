@@ -32,7 +32,7 @@
 				}
 			},
 			{
-				"name": "LoopThroughFiles",
+				"name": "LoopFiles",
 				"type": "ForEach",
 				"dependsOn": [
 					{
