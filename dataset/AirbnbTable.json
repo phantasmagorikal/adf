@@ -1,0 +1,16 @@
+{
+	"name": "AirbnbTable",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AirbnbDatabase",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "POSTING_T"
+		}
+	}
+}
