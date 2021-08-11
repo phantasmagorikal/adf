@@ -19,6 +19,20 @@
 						"type": "DatasetReference"
 					},
 					"name": "WriteDuplicatedData"
+				},
+				{
+					"dataset": {
+						"referenceName": "DataIssueTable",
+						"type": "DatasetReference"
+					},
+					"name": "WriteMissingNameRows"
+				},
+				{
+					"dataset": {
+						"referenceName": "DataIssueTable",
+						"type": "DatasetReference"
+					},
+					"name": "WriteMissingHostName"
 				}
 			],
 			"transformations": [
@@ -48,9 +62,27 @@
 				},
 				{
 					"name": "SplitDataIssue"
+				},
+				{
+					"name": "AppendMissingNamesIssue"
+				},
+				{
+					"name": "Select2"
+				},
+				{
+					"name": "AppendMissingHostNames"
+				},
+				{
+					"name": "Select3"
+				},
+				{
+					"name": "AppendMissingNeighborhood"
+				},
+				{
+					"name": "Select4"
 				}
 			],
-			"script": "source(output(\n\t\tid as integer,\n\t\tname as string,\n\t\thost_id as integer,\n\t\thost_name as string,\n\t\tneighbourhood_group as string,\n\t\tneighbourhood as string,\n\t\tlatitude as decimal(10,0),\n\t\tlongitude as decimal(10,0),\n\t\troom_type as string,\n\t\tprice as float,\n\t\tminimum_nights as integer,\n\t\tnumber_of_reviews as integer,\n\t\tlast_review as date 'MM/dd/yyyy',\n\t\treviews_per_month as float,\n\t\tcalculated_host_listings_count as integer,\n\t\tavailability_365 as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> ReadAirbnbData\nReadAirbnbData derive(name_clean = lower(regexReplace(name, '[^A-Za-z0-9]|(  +)', ' ')),\n\t\thost_name_clean = lower(regexReplace(host_name, '[^A-Za-z]|(  +)', ' ')),\n\t\tneightborhood_clean = lower(regexReplace(neighbourhood, '[^A-Za-z0-9]|(  +)', ' ')),\n\t\troom_type_clean = lower(regexReplace(room_type, '[^A-Za-z0-9]|(  +)', ' '))) ~> CleanNameHostNameNeighborhoodRoom\nCleanNameHostNameNeighborhoodRoom aggregate(groupBy(id),\n\tCount = count(id)) ~> GetIdCount\nGetIdCount filter(Count>1) ~> FilterOutDuplicatedId\nFilterOutDuplicatedId, ReadAirbnbData join(GetIdCount@id == ReadAirbnbData@id,\n\tjoinType:'inner',\n\tbroadcast: 'auto')~> JoinRawData\nJoinRawData derive(issue = concat('duplication(', toString(Count), ' times)')) ~> AppendDuplicatedDataIssue\nAppendDuplicatedDataIssue select(mapColumn(\n\t\tid = GetIdCount@id,\n\t\tname,\n\t\thost_id,\n\t\thost_name,\n\t\tneighbourhood_group,\n\t\tneighbourhood,\n\t\tlatitude,\n\t\tlongitude,\n\t\troom_type,\n\t\tprice,\n\t\tminimum_nights,\n\t\tnumber_of_reviews,\n\t\tlast_review,\n\t\treviews_per_month,\n\t\tcalculated_host_listings_count,\n\t\tavailability_365,\n\t\tissue\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Select1\nCleanNameHostNameNeighborhoodRoom window(over(id),\n\tasc(id, true),\n\tRank = denseRank()) ~> RankData\nRankData filter(Rank==1) ~> FilterForUniqueData\nFilterForUniqueData split(isNull(name_clean) || name_clean=='',\n\tisNull(host_name_clean) || host_name_clean=='',\n\tisNull(neightborhood_clean) || neightborhood_clean=='',\n\tisNull(room_type_clean) || room_type_clean=='',\n\tisNull(price) || price<=0,\n\tisNull(availability_365) || availability_365<=0,\n\tdisjoint: false) ~> SplitDataIssue@(MissingNames, MissingHostNames, MissingNeighborhood, MissingRoomType, InvalidPrice, InvalidAvailability, Valid)\nSelect1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> WriteDuplicatedData"
+			"script": "source(output(\n\t\tid as integer,\n\t\tname as string,\n\t\thost_id as integer,\n\t\thost_name as string,\n\t\tneighbourhood_group as string,\n\t\tneighbourhood as string,\n\t\tlatitude as decimal(10,0),\n\t\tlongitude as decimal(10,0),\n\t\troom_type as string,\n\t\tprice as float,\n\t\tminimum_nights as integer,\n\t\tnumber_of_reviews as integer,\n\t\tlast_review as date 'MM/dd/yyyy',\n\t\treviews_per_month as float,\n\t\tcalculated_host_listings_count as integer,\n\t\tavailability_365 as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> ReadAirbnbData\nReadAirbnbData derive(name_clean = lower(regexReplace(name, '[^A-Za-z0-9]|(  +)', ' ')),\n\t\thost_name_clean = lower(regexReplace(host_name, '[^A-Za-z]|(  +)', ' ')),\n\t\tneightborhood_clean = lower(regexReplace(neighbourhood, '[^A-Za-z0-9]|(  +)', ' ')),\n\t\troom_type_clean = lower(regexReplace(room_type, '[^A-Za-z0-9]|(  +)', ' '))) ~> CleanNameHostNameNeighborhoodRoom\nCleanNameHostNameNeighborhoodRoom aggregate(groupBy(id),\n\tCount = count(id)) ~> GetIdCount\nGetIdCount filter(Count>1) ~> FilterOutDuplicatedId\nFilterOutDuplicatedId, ReadAirbnbData join(GetIdCount@id == ReadAirbnbData@id,\n\tjoinType:'inner',\n\tbroadcast: 'auto')~> JoinRawData\nJoinRawData derive(issue = concat('duplication(', toString(Count), ' times)')) ~> AppendDuplicatedDataIssue\nAppendDuplicatedDataIssue select(mapColumn(\n\t\tid = GetIdCount@id,\n\t\tname,\n\t\thost_id,\n\t\thost_name,\n\t\tneighbourhood_group,\n\t\tneighbourhood,\n\t\tlatitude,\n\t\tlongitude,\n\t\troom_type,\n\t\tprice,\n\t\tminimum_nights,\n\t\tnumber_of_reviews,\n\t\tlast_review,\n\t\treviews_per_month,\n\t\tcalculated_host_listings_count,\n\t\tavailability_365,\n\t\tissue\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Select1\nCleanNameHostNameNeighborhoodRoom window(over(id),\n\tasc(id, true),\n\tRank = denseRank()) ~> RankData\nRankData filter(Rank==1) ~> FilterForUniqueData\nFilterForUniqueData split(isNull(name_clean) || name_clean=='',\n\tisNull(host_name_clean) || host_name_clean=='',\n\tisNull(neightborhood_clean) || neightborhood_clean=='',\n\tisNull(room_type_clean) || room_type_clean=='',\n\tisNull(price) || price<=0,\n\tisNull(availability_365) || availability_365<=0,\n\tdisjoint: false) ~> SplitDataIssue@(MissingNames, MissingHostNames, MissingNeighborhood, MissingRoomType, InvalidPrice, InvalidAvailability, Valid)\nSplitDataIssue@MissingNames derive(issue = 'missing name') ~> AppendMissingNamesIssue\nAppendMissingNamesIssue select(mapColumn(\n\t\tid,\n\t\tname,\n\t\thost_id,\n\t\thost_name,\n\t\tneighbourhood_group,\n\t\tneighbourhood,\n\t\tlatitude,\n\t\tlongitude,\n\t\troom_type,\n\t\tprice,\n\t\tminimum_nights,\n\t\tnumber_of_reviews,\n\t\tlast_review,\n\t\treviews_per_month,\n\t\tcalculated_host_listings_count,\n\t\tavailability_365,\n\t\tissue\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Select2\nSplitDataIssue@MissingHostNames derive(issue = 'missing host name') ~> AppendMissingHostNames\nAppendMissingHostNames select(mapColumn(\n\t\tid,\n\t\tname,\n\t\thost_id,\n\t\thost_name,\n\t\tneighbourhood_group,\n\t\tneighbourhood,\n\t\tlatitude,\n\t\tlongitude,\n\t\troom_type,\n\t\tprice,\n\t\tminimum_nights,\n\t\tnumber_of_reviews,\n\t\tlast_review,\n\t\treviews_per_month,\n\t\tcalculated_host_listings_count,\n\t\tavailability_365,\n\t\tissue\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Select3\nSplitDataIssue@MissingNeighborhood derive(issue = ERROR_FUNCTION('__SINGLE_QUOTE__missing neighborhood\"')) ~> AppendMissingNeighborhood\nAppendMissingNeighborhood select(mapColumn(\n\t\tid,\n\t\tname,\n\t\thost_id,\n\t\thost_name,\n\t\tneighbourhood_group,\n\t\tneighbourhood,\n\t\tlatitude,\n\t\tlongitude,\n\t\troom_type,\n\t\tprice,\n\t\tminimum_nights,\n\t\tnumber_of_reviews,\n\t\tlast_review,\n\t\treviews_per_month,\n\t\tcalculated_host_listings_count,\n\t\tavailability_365,\n\t\tissue\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Select4\nSelect1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> WriteDuplicatedData\nSelect2 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> WriteMissingNameRows\nSelect3 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> WriteMissingHostName"
 		}
 	}
 }
