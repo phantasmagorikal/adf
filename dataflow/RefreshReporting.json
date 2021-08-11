@@ -1,0 +1,20 @@
+{
+	"name": "RefreshReporting",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "AirbnbTable",
+						"type": "DatasetReference"
+					},
+					"name": "ReadPostingData"
+				}
+			],
+			"sinks": [],
+			"transformations": [],
+			"script": "source(output(\n\t\tid as integer,\n\t\tlatitude as decimal(10,0),\n\t\tlongitude as decimal(10,0),\n\t\troom_type as string,\n\t\tprice as float,\n\t\tminimum_nights as integer,\n\t\tnumber_of_reviews as integer,\n\t\tlast_review as date,\n\t\treviews_per_month as float,\n\t\tcalculated_host_listings_count as integer,\n\t\tavailability_365 as integer,\n\t\tname as string,\n\t\thost as string,\n\t\tneightborhood as string,\n\t\troom as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table') ~> ReadPostingData"
+		}
+	}
+}
