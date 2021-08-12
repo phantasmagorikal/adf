@@ -1,0 +1,96 @@
+{
+	"name": "AirbnbInputCSV",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AirbnbStorageAccount",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"FileName": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": {
+					"value": "@dataset().FileName",
+					"type": "Expression"
+				},
+				"container": "input"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "id",
+				"type": "String"
+			},
+			{
+				"name": "name",
+				"type": "String"
+			},
+			{
+				"name": "host_id",
+				"type": "String"
+			},
+			{
+				"name": "host_name",
+				"type": "String"
+			},
+			{
+				"name": "neighbourhood_group",
+				"type": "String"
+			},
+			{
+				"name": "neighbourhood",
+				"type": "String"
+			},
+			{
+				"name": "latitude",
+				"type": "String"
+			},
+			{
+				"name": "longitude",
+				"type": "String"
+			},
+			{
+				"name": "room_type",
+				"type": "String"
+			},
+			{
+				"name": "price",
+				"type": "String"
+			},
+			{
+				"name": "minimum_nights",
+				"type": "String"
+			},
+			{
+				"name": "number_of_reviews",
+				"type": "String"
+			},
+			{
+				"name": "last_review",
+				"type": "String"
+			},
+			{
+				"name": "reviews_per_month",
+				"type": "String"
+			},
+			{
+				"name": "calculated_host_listings_count",
+				"type": "String"
+			},
+			{
+				"name": "availability_365",
+				"type": "String"
+			}
+		]
+	}
+}
