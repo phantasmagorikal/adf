@@ -36,7 +36,15 @@
 							"typeProperties": {
 								"dataflow": {
 									"referenceName": "Airbnb",
-									"type": "DataFlowReference"
+									"type": "DataFlowReference",
+									"datasetParameters": {
+										"ReadAirbnbData": {
+											"FileName": {
+												"value": "@item().name",
+												"type": "Expression"
+											}
+										}
+									}
 								},
 								"compute": {
 									"coreCount": 8,
